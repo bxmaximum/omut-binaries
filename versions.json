@@ -1,0 +1,24 @@
+{
+  "php": {
+    "8.3": {
+      "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/php-8.3-macos-aarch64.tar.gz",
+      "x86_64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/php-8.3-macos-x86_64.tar.gz"
+    },
+    "8.2": {
+      "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/php-8.2-macos-aarch64.tar.gz",
+      "x86_64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/php-8.2-macos-x86_64.tar.gz"
+    }
+  },
+  "nginx": {
+    "1.24.0": {
+      "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/nginx-1.24.0-macos-aarch64.tar.gz",
+      "x86_64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/nginx-1.24.0-macos-x86_64.tar.gz"
+    }
+  },
+  "mariadb": {
+    "11.4.2": {
+      "aarch64": "https://archive.mariadb.org/mariadb-11.4.2/bintar-osx10.13-aarch64/mariadb-11.4.2-osx10.13-aarch64.tar.gz",
+      "x86_64": "https://archive.mariadb.org/mariadb-11.4.2/bintar-osx10.13-x86_64/mariadb-11.4.2-osx10.13-x86_64.tar.gz"
+    }
+  }
+}
