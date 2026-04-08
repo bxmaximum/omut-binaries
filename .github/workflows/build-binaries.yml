@@ -22,9 +22,18 @@ on:
 
 jobs:
   build-php:
-    name: Build PHP ${{ github.event.inputs.php_version || '8.3' }} on macOS
-    runs-on: macos-latest
-    
+    name: Build PHP ${{ github.event.inputs.php_version || '8.3' }} on macOS (${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest # Apple Silicon (M1/M2/M3)
+            arch: aarch64
+            spc_arch: aarch64
+          - os: macos-13 # Intel
+            arch: x86_64
+            spc_arch: x86_64
+            
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -33,11 +42,11 @@ jobs:
         uses: actions/cache@v3
         with:
           path: source
-          key: spc-source-php-${{ github.event.inputs.php_version || '8.3' }}
+          key: spc-source-php-${{ github.event.inputs.php_version || '8.3' }}-${{ matrix.arch }}
 
       - name: Download static-php-cli (SPC)
         run: |
-          wget -O spc.tgz "https://github.com/crazywhalecc/static-php-cli/releases/latest/download/spc-macos-aarch64.tar.gz"
+          wget -O spc.tgz "https://github.com/crazywhalecc/static-php-cli/releases/latest/download/spc-macos-${{ matrix.spc_arch }}.tar.gz"
           tar -xvf spc.tgz
           chmod +x spc
           ./spc --version
@@ -65,18 +74,25 @@ jobs:
           cp buildroot/bin/php build_output/php/
           cp buildroot/bin/php-fpm build_output/php/
           cd build_output
-          tar -czvf php-${{ github.event.inputs.php_version || '8.3' }}-macos-aarch64.tar.gz php/
+          tar -czvf php-${{ github.event.inputs.php_version || '8.3' }}-macos-${{ matrix.arch }}.tar.gz php/
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: php-${{ github.event.inputs.php_version || '8.3' }}-macos-aarch64
+          name: php-${{ github.event.inputs.php_version || '8.3' }}-macos-${{ matrix.arch }}
           path: build_output/php-*.tar.gz
 
   build-nginx:
-    name: Build Nginx ${{ github.event.inputs.nginx_version || '1.24.0' }} on macOS
-    runs-on: macos-latest
-    
+    name: Build Nginx ${{ github.event.inputs.nginx_version || '1.24.0' }} on macOS (${{ matrix.arch }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest # Apple Silicon (M1/M2/M3)
+            arch: aarch64
+          - os: macos-13 # Intel
+            arch: x86_64
+            
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -132,10 +148,10 @@ jobs:
           cp /tmp/nginx-build/nginx build_output/nginx/
           
           cd build_output
-          tar -czvf nginx-${{ github.event.inputs.nginx_version || '1.24.0' }}-macos-aarch64.tar.gz nginx/
+          tar -czvf nginx-${{ github.event.inputs.nginx_version || '1.24.0' }}-macos-${{ matrix.arch }}.tar.gz nginx/
 
       - name: Upload Nginx Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nginx-${{ github.event.inputs.nginx_version || '1.24.0' }}-macos-aarch64
+          name: nginx-${{ github.event.inputs.nginx_version || '1.24.0' }}-macos-${{ matrix.arch }}
           path: build_output/nginx-*.tar.gz
