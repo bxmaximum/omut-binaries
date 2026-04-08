@@ -1,0 +1,139 @@
+name: Build Portable Binaries (macOS)
+
+on:
+  workflow_dispatch:
+    inputs:
+      php_version:
+        description: 'PHP Version to build'
+        required: true
+        default: '8.3'
+        type: choice
+        options:
+          - '8.3'
+          - '8.2'
+          - '8.1'
+          - '8.0'
+          - '7.4'
+      nginx_version:
+        description: 'Nginx Version to build'
+        required: true
+        default: '1.24.0'
+        type: string
+
+jobs:
+  build-php:
+    name: Build PHP ${{ github.event.inputs.php_version || '8.3' }} on macOS
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Cache SPC Source
+        uses: actions/cache@v3
+        with:
+          path: source
+          key: spc-source-php-${{ github.event.inputs.php_version || '8.3' }}
+
+      - name: Download static-php-cli (SPC)
+        run: |
+          wget -O spc.tgz "https://github.com/crazywhalecc/static-php-cli/releases/latest/download/spc-macos-aarch64.tar.gz"
+          tar -xvf spc.tgz
+          chmod +x spc
+          ./spc --version
+
+      - name: Setup Build Environment (SPC Doctor)
+        run: |
+          # Эта команда автоматически устанавливает нужные системные пакеты (pkg-config, cmake, autoconf и т.д.)
+          ./spc doctor --auto-fix
+
+      - name: Download PHP Sources and Extensions
+        run: |
+          # Загружаем исходники PHP и нужные расширения для 1С-Битрикс (убрали sysvsh, sysvmsg, sysvsem, pdo_sqlite, pdo_mysql, mysqli, mysqlnd, sqlite3 т.к. static-php-cli имеет свои особенности именования)
+          ./spc download --with-php=${{ github.event.inputs.php_version || '8.3' }} --for-extensions="apcu,bcmath,bz2,calendar,ctype,curl,dom,exif,fileinfo,filter,ftp,gd,iconv,igbinary,intl,mbregex,mbstring,mysqli,mysqlnd,opcache,openssl,pcntl,pdo,pdo_mysql,pdo_sqlite,phar,posix,readline,redis,session,shmop,simplexml,sockets,sodium,sqlite3,tokenizer,xml,xmlreader,xmlwriter,xsl,zip,zlib"
+
+      - name: Build PHP FPM & CLI
+        run: |
+          # Собираем FPM и CLI
+          ./spc build --build-cli --build-fpm "apcu,bcmath,bz2,calendar,ctype,curl,dom,exif,fileinfo,filter,ftp,gd,iconv,igbinary,intl,mbregex,mbstring,mysqli,mysqlnd,opcache,openssl,pcntl,pdo,pdo_mysql,pdo_sqlite,phar,posix,readline,redis,session,shmop,simplexml,sockets,sodium,sqlite3,tokenizer,xml,xmlreader,xmlwriter,xsl,zip,zlib"
+
+      - name: Package Binaries
+        run: |
+          mkdir -p build_output/php
+          cp buildroot/bin/php build_output/php/
+          cp buildroot/bin/php-fpm build_output/php/
+          cd build_output
+          tar -czvf php-${{ github.event.inputs.php_version || '8.3' }}-macos-aarch64.tar.gz php/
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-${{ github.event.inputs.php_version || '8.3' }}-macos-aarch64
+          path: build_output/php-*.tar.gz
+
+  build-nginx:
+    name: Build Nginx ${{ github.event.inputs.nginx_version || '1.24.0' }} on macOS
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Build Dependencies (macOS)
+        run: |
+          # Устанавливаем зависимости для сборки (PCRE, zlib, OpenSSL)
+          brew install pcre zlib openssl
+
+      - name: Download Nginx Sources
+        run: |
+          NGINX_VERSION=${{ github.event.inputs.nginx_version || '1.24.0' }}
+          wget "http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz"
+          tar -xvf "nginx-${NGINX_VERSION}.tar.gz"
+          mv "nginx-${NGINX_VERSION}" nginx-src
+
+      - name: Configure and Build Nginx
+        run: |
+          cd nginx-src
+          
+          # Получаем пути к библиотекам из Homebrew для статической линковки
+          OPENSSL_DIR=$(brew --prefix openssl)
+          PCRE_DIR=$(brew --prefix pcre)
+          ZLIB_DIR=$(brew --prefix zlib)
+
+          # Конфигурируем Nginx
+          # Важно: указываем префиксы так, чтобы они указывали на нашу структуру папок
+          ./configure \
+            --prefix=/tmp/nginx-build \
+            --sbin-path=nginx \
+            --conf-path=nginx.conf \
+            --error-log-path=error.log \
+            --http-log-path=access.log \
+            --pid-path=nginx.pid \
+            --lock-path=nginx.lock \
+            --http-client-body-temp-path=client_body_temp \
+            --http-proxy-temp-path=proxy_temp \
+            --http-fastcgi-temp-path=fastcgi_temp \
+            --with-http_ssl_module \
+            --with-http_v2_module \
+            --with-http_gzip_static_module \
+            --with-cc-opt="-I$OPENSSL_DIR/include -I$PCRE_DIR/include -I$ZLIB_DIR/include" \
+            --with-ld-opt="-L$OPENSSL_DIR/lib -L$PCRE_DIR/lib -L$ZLIB_DIR/lib"
+
+          # Собираем и "устанавливаем" во временную папку
+          make -j$(sysctl -n hw.ncpu)
+          make install
+
+      - name: Package Nginx Binary
+        run: |
+          mkdir -p build_output/nginx
+          # Нам нужен только бинарник, конфиги Omut сгенерирует сам на Rust
+          cp /tmp/nginx-build/nginx build_output/nginx/
+          
+          cd build_output
+          tar -czvf nginx-${{ github.event.inputs.nginx_version || '1.24.0' }}-macos-aarch64.tar.gz nginx/
+
+      - name: Upload Nginx Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nginx-${{ github.event.inputs.nginx_version || '1.24.0' }}-macos-aarch64
+          path: build_output/nginx-*.tar.gz
