@@ -10,9 +10,9 @@
     }
   },
   "nginx": {
-    "1.24.0": {
-      "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/nginx-1.24.0-macos-aarch64.tar.gz",
-      "x86_64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/nginx-1.24.0-macos-x86_64.tar.gz"
+    "1.29.8": {
+      "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/nginx-1.29.8-macos-aarch64.tar.gz",
+      "x86_64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/nginx-1.29.8-macos-x86_64.tar.gz"
     }
   },
   "mariadb": {

@@ -17,7 +17,7 @@ on:
       nginx_version:
         description: 'Nginx Version to build'
         required: true
-        default: '1.24.0'
+        default: '1.29.8'
         type: string
       release_tag:
         description: 'Release Tag (e.g. v1.0.0)'
@@ -35,9 +35,6 @@ jobs:
           - os: macos-latest # Apple Silicon (M1/M2/M3)
             arch: aarch64
             spc_arch: aarch64
-          - os: macos-12 # Intel
-            arch: x86_64
-            spc_arch: x86_64
             
     steps:
       - name: Checkout code
@@ -88,15 +85,13 @@ jobs:
           path: build_output/php-*.tar.gz
 
   build-nginx:
-    name: Build Nginx ${{ github.event.inputs.nginx_version || '1.24.0' }} on macOS (${{ matrix.arch }})
+    name: Build Nginx ${{ github.event.inputs.nginx_version || '1.29.8' }} on macOS (${{ matrix.arch }})
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         include:
           - os: macos-latest # Apple Silicon (M1/M2/M3)
             arch: aarch64
-          - os: macos-12 # Intel
-            arch: x86_64
             
     steps:
       - name: Checkout code
@@ -109,7 +104,7 @@ jobs:
 
       - name: Download Nginx Sources
         run: |
-          NGINX_VERSION=${{ github.event.inputs.nginx_version || '1.24.0' }}
+          NGINX_VERSION=${{ github.event.inputs.nginx_version || '1.29.8' }}
           wget "http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz"
           tar -xvf "nginx-${NGINX_VERSION}.tar.gz"
           mv "nginx-${NGINX_VERSION}" nginx-src
@@ -153,12 +148,12 @@ jobs:
           cp /tmp/nginx-build/nginx build_output/nginx/
           
           cd build_output
-          tar -czvf nginx-${{ github.event.inputs.nginx_version || '1.24.0' }}-macos-${{ matrix.arch }}.tar.gz nginx/
+          tar -czvf nginx-${{ github.event.inputs.nginx_version || '1.29.8' }}-macos-${{ matrix.arch }}.tar.gz nginx/
 
       - name: Upload Nginx Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nginx-${{ github.event.inputs.nginx_version || '1.24.0' }}-macos-${{ matrix.arch }}
+          name: nginx-${{ github.event.inputs.nginx_version || '1.29.8' }}-macos-${{ matrix.arch }}
           path: build_output/nginx-*.tar.gz
 
   publish_release:
@@ -191,7 +186,7 @@ jobs:
       - name: Update versions.json
         run: |
           PHP_V="${{ github.event.inputs.php_version || '8.3' }}"
-          NGINX_V="${{ github.event.inputs.nginx_version || '1.24.0' }}"
+          NGINX_V="${{ github.event.inputs.nginx_version || '1.29.8' }}"
           TAG="${{ github.event.inputs.release_tag }}"
           REPO="${{ github.repository }}"
           
