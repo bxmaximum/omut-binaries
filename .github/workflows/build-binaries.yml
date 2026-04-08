@@ -48,6 +48,8 @@ jobs:
           ./spc doctor --auto-fix
 
       - name: Download PHP Sources and Extensions
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Загружаем исходники PHP и нужные расширения для 1С-Битрикс (убрали sysvsh, sysvmsg, sysvsem, pdo_sqlite, pdo_mysql, mysqli, mysqlnd, sqlite3 т.к. static-php-cli имеет свои особенности именования)
           ./spc download --with-php=${{ github.event.inputs.php_version || '8.3' }} --for-extensions="apcu,bcmath,bz2,calendar,ctype,curl,dom,exif,fileinfo,filter,ftp,gd,iconv,igbinary,intl,mbregex,mbstring,mysqli,mysqlnd,opcache,openssl,pcntl,pdo,pdo_mysql,pdo_sqlite,phar,posix,readline,redis,session,shmop,simplexml,sockets,sodium,sqlite3,tokenizer,xml,xmlreader,xmlwriter,xsl,zip,zlib"
