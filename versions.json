@@ -1,8 +1,8 @@
 {
   "php": {
     "8.3": {
-      "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/php-8.3-macos-aarch64.tar.gz",
-      "x86_64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/php-8.3-macos-x86_64.tar.gz"
+      "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v0.1.0/php-8.3-macos-aarch64.tar.gz",
+      "x86_64": "https://github.com/bxmaximum/omut-binaries/releases/download/v0.1.0/php-8.3-macos-x86_64.tar.gz"
     },
     "8.2": {
       "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/php-8.2-macos-aarch64.tar.gz",
@@ -11,8 +11,8 @@
   },
   "nginx": {
     "1.29.8": {
-      "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/nginx-1.29.8-macos-aarch64.tar.gz",
-      "x86_64": "https://github.com/bxmaximum/omut-binaries/releases/download/v1.0.0/nginx-1.29.8-macos-x86_64.tar.gz"
+      "aarch64": "https://github.com/bxmaximum/omut-binaries/releases/download/v0.1.0/nginx-1.29.8-macos-aarch64.tar.gz",
+      "x86_64": "https://github.com/bxmaximum/omut-binaries/releases/download/v0.1.0/nginx-1.29.8-macos-x86_64.tar.gz"
     }
   },
   "mariadb": {
